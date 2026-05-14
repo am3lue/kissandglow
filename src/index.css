@@ -1,0 +1,29 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  --font-display: "Outfit", sans-serif;
+
+  --color-primary-bg: #FFFFFF;
+  --color-secondary-bg: #FDF6F0;
+  --color-accent: #7F2649;
+  --color-accent-hover: #661e3a;
+  --color-charcoal: #333333;
+
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2.5rem;
+}
+
+@layer base {
+  body {
+    @apply bg-white text-[#333333] font-sans antialiased;
+  }
+}
+
+.premium-blur {
+  backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.8);
+}
