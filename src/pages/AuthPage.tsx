@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Lock, User, ArrowRight, Github } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../contexts/ToastContext';
 
 const AuthPage: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -10,18 +11,37 @@ const AuthPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!email) newErrors.email = 'Please fill out your email';
+    if (!password) newErrors.password = 'Password is required';
+    if (!isLogin && !fullName) newErrors.fullName = 'Please enter your full name';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      showToast('Please correct the highlighted fields', 'warning');
+      return;
+    }
+
     setLoading(true);
-    setError(null);
+    setErrors({});
 
     try {
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        showToast('Welcome back!', 'success');
         navigate('/account');
       } else {
         const { error } = await supabase.auth.signUp({
@@ -32,10 +52,10 @@ const AuthPage: React.FC = () => {
           }
         });
         if (error) throw error;
-        alert('Verification email sent! Please check your inbox.');
+        showToast('Verification email sent! Check your inbox.', 'info');
       }
     } catch (err: any) {
-      setError(err.message);
+      showToast(err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -57,48 +77,58 @@ const AuthPage: React.FC = () => {
           </p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-500 text-sm p-4 rounded-2xl mb-6 flex items-start space-x-2">
-            <span className="font-bold">!</span>
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleAuth} className="space-y-5">
+        <form onSubmit={handleAuth} className="space-y-6" noValidate>
           {!isLogin && (
-            <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-              <input
-                type="text"
-                placeholder="Full Name"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-secondary-bg border-none rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-accent/20 transition-all outline-none text-charcoal"
-              />
+            <div className="space-y-1">
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  value={fullName}
+                  onChange={(e) => {
+                    setFullName(e.target.value);
+                    if (errors.fullName) setErrors({...errors, fullName: ''});
+                  }}
+                  className={`w-full bg-secondary-bg border-none rounded-2xl py-4 pl-12 pr-4 focus:ring-2 transition-all outline-none text-charcoal ${errors.fullName ? 'ring-2 ring-red-200' : 'focus:ring-accent/20'}`}
+                />
+              </div>
+              {errors.fullName && <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest pl-4">{errors.fullName}</p>}
             </div>
           )}
-          <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-            <input
-              type="email"
-              placeholder="Email Address"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-secondary-bg border-none rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-accent/20 transition-all outline-none text-charcoal"
-            />
+          
+          <div className="space-y-1">
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors({...errors, email: ''});
+                }}
+                className={`w-full bg-secondary-bg border-none rounded-2xl py-4 pl-12 pr-4 focus:ring-2 transition-all outline-none text-charcoal ${errors.email ? 'ring-2 ring-red-200' : 'focus:ring-accent/20'}`}
+              />
+            </div>
+            {errors.email && <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest pl-4">{errors.email}</p>}
           </div>
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
-            <input
-              type="password"
-              placeholder="Password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-secondary-bg border-none rounded-2xl py-4 pl-12 pr-4 focus:ring-2 focus:ring-accent/20 transition-all outline-none text-charcoal"
-            />
+
+          <div className="space-y-1">
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300" />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) setErrors({...errors, password: ''});
+                }}
+                className={`w-full bg-secondary-bg border-none rounded-2xl py-4 pl-12 pr-4 focus:ring-2 transition-all outline-none text-charcoal ${errors.password ? 'ring-2 ring-red-200' : 'focus:ring-accent/20'}`}
+              />
+            </div>
+            {errors.password && <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest pl-4">{errors.password}</p>}
           </div>
 
           <button
@@ -110,14 +140,13 @@ const AuthPage: React.FC = () => {
           </button>
         </form>
 
-
-
-        {/* Social login removed */}
-
-        <p className="mt-10 text-center text-sm text-gray-500">
-          {isLogin ? "Don't have an account? " : "Already have an account? "}
+        <p className="text-center mt-8 text-sm text-gray-400">
+          {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
           <button
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setErrors({});
+            }}
             className="text-accent font-semibold hover:underline"
           >
             {isLogin ? 'Sign Up' : 'Log In'}

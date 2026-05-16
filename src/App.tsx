@@ -2,6 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
+import { ToastProvider } from './contexts/ToastContext';
+import { DialogProvider } from './contexts/DialogContext';
 import { ArrowRight } from 'lucide-react';
 import Navbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
@@ -30,9 +32,11 @@ const ProtectedRoute = ({ children, adminOnly = false }: { children: React.React
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
+    <ToastProvider>
+      <DialogProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Router>
           <div className="flex flex-col min-h-screen">
             <Navbar />
             <CartDrawer />
@@ -105,6 +109,8 @@ function App() {
         </Router>
       </CartProvider>
     </AuthProvider>
+    </DialogProvider>
+  </ToastProvider>
   );
 }
 

@@ -4,25 +4,48 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, CheckCircle, CreditCard, Truck, MapPin } from 'lucide-react';
+import { cn } from '../lib/utils';
+import { ArrowRight, CheckCircle, CreditCard, Truck, MapPin, AlertCircle } from 'lucide-react';
+import { useToast } from '../contexts/ToastContext';
+import { useConfirm } from '../contexts/DialogContext';
 
 const Checkout: React.FC = () => {
   const { items, total, clearCart } = useCart();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const confirm = useConfirm();
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   
   const [address, setAddress] = useState('');
+  const [addressError, setAddressError] = useState<string | null>(null);
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!address) {
+      setAddressError('Please provide a shipping address');
+      showToast('Shipping address is required', 'warning');
+      return;
+    }
+
+    const isConfirmed = await confirm({
+      title: 'Complete Purchase',
+      message: `You are about to place an order for $${total.toFixed(2)}. Proceed?`,
+      confirmText: 'Pay & Complete'
+    });
+
+    if (!isConfirmed) return;
+
     if (!user || user.id === 'template-user-id') {
       // Mock success for template mode
+      setLoading(true);
       setTimeout(() => {
         clearCart();
         setOrderComplete(true);
         setLoading(false);
+        showToast('Demo order successful!', 'success');
       }, 1500);
       return;
     }
@@ -39,7 +62,7 @@ const Checkout: React.FC = () => {
     ]).select().single();
 
     if (orderError) {
-      console.error(orderError);
+      showToast('Failed to create order', 'error');
       setLoading(false);
       return;
     }
@@ -55,7 +78,7 @@ const Checkout: React.FC = () => {
     const { error: itemsError } = await supabase.from('order_items').insert(orderItems);
 
     if (itemsError) {
-      console.error(itemsError);
+      showToast('Error saving order items', 'error');
       setLoading(false);
       return;
     }
@@ -66,6 +89,7 @@ const Checkout: React.FC = () => {
     clearCart();
     setOrderComplete(true);
     setLoading(false);
+    showToast('Order placed successfully!', 'success');
   };
 
   if (orderComplete) {
@@ -115,13 +139,23 @@ const Checkout: React.FC = () => {
               
               <div className="space-y-4">
                 <textarea
-                  required
-                  rows={4}
                   placeholder="Street, City, State/Province, Country, ZIP"
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full px-8 py-5 bg-secondary-bg border-none rounded-[2rem] outline-none focus:ring-2 focus:ring-accent/20 transition-all font-medium text-charcoal"
+                  onChange={(e) => {
+                    setAddress(e.target.value);
+                    if (addressError) setAddressError(null);
+                  }}
+                  className={cn(
+                    "w-full px-8 py-5 bg-secondary-bg border-none rounded-[2rem] outline-none focus:ring-2 transition-all font-medium text-charcoal resize-none",
+                    addressError ? "ring-2 ring-red-200" : "focus:ring-accent/20"
+                  )}
                 />
+                {addressError && (
+                  <div className="flex items-center space-x-2 text-red-500 px-4">
+                    <AlertCircle className="w-3 h-3" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest">{addressError}</p>
+                  </div>
+                )}
               </div>
             </section>
 

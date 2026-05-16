@@ -67,7 +67,7 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-      <Link to="/" className="inline-flex items-center space-x-2 text-sm text-gray-400 hover:text-accent mb-8 transition-colors">
+      <Link to="/products" className="inline-flex items-center space-x-2 text-sm text-gray-400 hover:text-accent mb-8 transition-colors">
         <ArrowLeft className="w-4 h-4" />
         <span>Back to Collection</span>
       </Link>

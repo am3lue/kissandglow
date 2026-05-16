@@ -71,7 +71,7 @@ const Navbar: React.FC = () => {
               </Link>
             )}
             <Link
-              to={user ? (isAdmin ? "/admin" : "/account") : "/login"}
+              to={user ? "/account" : "/login"}
               className="p-2 rounded-full hover:bg-secondary-bg transition-colors"
             >
               <User className="w-5 h-5" />

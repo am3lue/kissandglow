@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { Package, ShoppingCart, Users, TrendingUp, ChevronRight, Clock, CheckCircle, Truck } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../../lib/utils';
+import { useToast } from '../../contexts/ToastContext';
 
 const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState({
@@ -14,6 +15,7 @@ const AdminDashboard: React.FC = () => {
   });
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
   const [seedMessage, setSeedMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,6 +41,41 @@ const AdminDashboard: React.FC = () => {
 
     if (ordersRes.data) setRecentOrders(ordersRes.data);
     setLoading(false);
+  };
+
+  const seedSampleOrders = async () => {
+    try {
+      const { data: profile } = await supabase.from('profiles').select('id, full_name, email').limit(1).single();
+      const { data: products } = await supabase.from('products').select('id, price').limit(2);
+      
+      if (!profile) {
+        showToast('No customers found. Please sign up an account first.', 'warning');
+        return;
+      }
+      if (!products || products.length === 0) {
+        showToast('No products found. Please seed products first.', 'warning');
+        return;
+      }
+
+      // 1. Create Order
+      const { data: order, error: orderError } = await supabase.from('orders').insert([
+        { user_id: profile.id, total_amount: products[0].price * 2, status: 'Pending' }
+      ]).select().single();
+
+      if (orderError) throw orderError;
+
+      // 2. Create Order Items
+      const { error: itemError } = await supabase.from('order_items').insert([
+        { order_id: order.id, product_id: products[0].id, quantity: 2, price: products[0].price }
+      ]);
+
+      if (itemError) throw itemError;
+
+      showToast(`Complete order seeded for ${profile.full_name || profile.email}`, 'success');
+      fetchDashboardData();
+    } catch (err: any) {
+      showToast('Error seeding orders: ' + err.message, 'error');
+    }
   };
 
   const seedSampleProducts = async () => {
@@ -128,12 +165,12 @@ const AdminDashboard: React.FC = () => {
 
     const { error } = await supabase.from('products').insert(samples);
     if (error) {
-      setSeedMessage("Notice: Check DB columns. " + error.message);
+      showToast("Seeding failed: " + error.message, "error");
     } else {
-      setSeedMessage("Professional catalog seeded!");
+      showToast("Professional catalog seeded!", "success");
       fetchDashboardData();
     }
-    setTimeout(() => setSeedMessage(null), 5000);
+    setLoading(false);
   };
 
   const statCards = [
@@ -163,6 +200,18 @@ const AdminDashboard: React.FC = () => {
             </motion.div>
           )}
           <div className="flex space-x-3">
+            <Link
+              to="/"
+              className="px-6 py-3 bg-white text-charcoal rounded-full font-medium border border-gray-100 hover:bg-secondary-bg transition-all flex items-center space-x-2"
+            >
+              <span>View Storefront</span>
+            </Link>
+            <button
+              onClick={seedSampleOrders}
+              className="px-6 py-3 bg-white text-accent rounded-full font-medium border border-accent/10 hover:bg-accent/5 transition-all"
+            >
+              Seed Sample Orders
+            </button>
             <button
               onClick={seedSampleProducts}
               className="px-6 py-3 bg-secondary-bg text-accent rounded-full font-medium border border-accent/10 hover:bg-accent/5 transition-all"

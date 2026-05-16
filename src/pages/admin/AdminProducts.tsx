@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus, Search, Filter, Edit3, Trash2, X, Image as ImageIcon, Check } from 'lucide-react';
+import { Plus, Search, Filter, Edit3, Trash2, X, Image as ImageIcon, Check, ChevronDown, AlertCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useToast } from '../../contexts/ToastContext';
+import { useConfirm } from '../../contexts/DialogContext';
 
 interface Product {
   id: string;
@@ -41,7 +43,10 @@ const AdminProducts: React.FC = () => {
     variants: [] as { name: string; value: string }[],
     result_images: [] as string[]
   });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
+  const { showToast } = useToast();
+  const confirm = useConfirm();
 
   useEffect(() => {
     fetchProducts();
@@ -49,9 +54,15 @@ const AdminProducts: React.FC = () => {
 
   const fetchProducts = async () => {
     setLoading(true);
-    const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
-    if (data) setProducts(data);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      if (error) throw error;
+      if (data) setProducts(data);
+    } catch (err: any) {
+      showToast('Error loading products: ' + err.message, 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const uploadFile = async (file: File) => {
@@ -80,8 +91,10 @@ const AdminProducts: React.FC = () => {
       setUploading(true);
       const url = await uploadFile(file);
       setFormData(prev => ({ ...prev, image_url: url }));
+      if (formErrors.image_url) setFormErrors({...formErrors, image_url: ''});
+      showToast('Main image uploaded', 'success');
     } catch (error: any) {
-      alert('Error uploading image: ' + error.message + '\n\nNote: Ensure you have created a "product-images" bucket in Supabase Storage with public access.');
+      showToast('Error uploading: ' + error.message, 'error');
     } finally {
       setUploading(false);
     }
@@ -93,14 +106,15 @@ const AdminProducts: React.FC = () => {
 
     try {
       setUploading(true);
-      const uploadPromises = Array.from(files).map(file => uploadFile(file));
+      const uploadPromises = (Array.from(files) as File[]).map(file => uploadFile(file));
       const urls = await Promise.all(uploadPromises);
       setFormData(prev => ({ 
         ...prev, 
         result_images: [...prev.result_images, ...urls] 
       }));
+      showToast(`${urls.length} images added`, 'success');
     } catch (error: any) {
-      alert('Error uploading results: ' + error.message);
+      showToast('Error uploading results', 'error');
     } finally {
       setUploading(false);
     }
@@ -135,7 +149,22 @@ const AdminProducts: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Custom Validation
+    const errors: Record<string, string> = {};
+    if (!formData.name) errors.name = 'Product name is required';
+    if (!formData.price || Number(formData.price) <= 0) errors.price = 'Valid price is required';
+    if (!formData.image_url) errors.image_url = 'Please upload a main image';
+    if (!formData.description) errors.description = 'Description is required';
+    
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      showToast('Please complete all required fields', 'warning');
+      return;
+    }
+
     setLoading(true);
+    setFormErrors({});
 
     const payload = {
       ...formData,
@@ -144,29 +173,43 @@ const AdminProducts: React.FC = () => {
       stock_count: Number(formData.stock_count)
     };
     
-    const { error } = await supabase.from('products').insert([payload]);
-    
-    if (!error) {
+    try {
+      const { error } = await supabase.from('products').insert([payload]);
+      if (error) throw error;
+
+      showToast('Product created successfully', 'success');
       setIsModalOpen(false);
       setFormData({ 
-        name: '', 
-        price: 0, 
-        original_price: 0, 
-        stock_count: 0, 
-        category: 'Makeup', 
-        image_url: '', 
-        description: '',
-        how_to_use: '',
-        ingredients: '',
-        is_featured: false,
-        variants: [],
-        result_images: []
+        name: '', price: 0, original_price: 0, stock_count: 0, category: 'Makeup',
+        image_url: '', description: '', how_to_use: '', ingredients: '',
+        is_featured: false, variants: [], result_images: []
       });
       fetchProducts();
-    } else {
-      alert(error.message);
+    } catch (err: any) {
+      showToast('Error saving product: ' + err.message, 'error');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const deleteProduct = async (id: string) => {
+    const isConfirmed = await confirm({
+      title: 'Delete Product',
+      message: 'Are you sure? This action cannot be undone.',
+      confirmText: 'Delete Forever',
+      type: 'danger'
+    });
+
+    if (!isConfirmed) return;
+
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', id);
+      if (error) throw error;
+      showToast('Product deleted', 'info');
+      fetchProducts();
+    } catch (err: any) {
+      showToast('Error: ' + err.message, 'error');
+    }
   };
 
   const filteredProducts = products.filter(p => 
@@ -261,7 +304,10 @@ const AdminProducts: React.FC = () => {
                         <button className="p-2 text-gray-400 hover:text-accent hover:bg-accent/5 rounded-lg transition-all">
                           <Edit3 className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all">
+                        <button 
+                          onClick={() => deleteProduct(p.id)}
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -299,17 +345,23 @@ const AdminProducts: React.FC = () => {
                   </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-8 overflow-y-auto max-h-[70vh] pr-4 custom-scrollbar">
+                <form onSubmit={handleSubmit} className="space-y-8 overflow-y-auto max-h-[70vh] pr-4 custom-scrollbar" noValidate>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase tracking-widest text-gray-400 px-2">Product Name</label>
                       <input
-                        required
                         placeholder="e.g. Satin Silk Lipstick"
                         value={formData.name}
-                        onChange={e => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full px-6 py-4 bg-secondary-bg border-none rounded-2xl outline-none focus:ring-2 focus:ring-accent/20 transition-all font-medium"
+                        onChange={e => {
+                          setFormData({ ...formData, name: e.target.value });
+                          if (formErrors.name) setFormErrors({...formErrors, name: ''});
+                        }}
+                        className={cn(
+                          "w-full px-6 py-4 bg-secondary-bg border-none rounded-2xl outline-none focus:ring-2 transition-all font-medium",
+                          formErrors.name ? "ring-2 ring-red-200" : "focus:ring-accent/20"
+                        )}
                       />
+                      {formErrors.name && <p className="text-[8px] text-red-500 font-bold uppercase tracking-widest pl-2">{formErrors.name}</p>}
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase tracking-widest text-gray-400 px-2">Category</label>
@@ -332,12 +384,18 @@ const AdminProducts: React.FC = () => {
                       <label className="text-xs font-bold uppercase tracking-widest text-gray-400 px-2">Sale Price ($)</label>
                       <input
                         type="number"
-                        required
                         step="0.01"
-                        value={formData.price}
-                        onChange={e => setFormData({ ...formData, price: parseFloat(e.target.value) })}
-                        className="w-full px-6 py-4 bg-secondary-bg border-none rounded-2xl outline-none focus:ring-2 focus:ring-accent/20 transition-all font-medium"
+                        value={formData.price || ''}
+                        onChange={e => {
+                          setFormData({ ...formData, price: parseFloat(e.target.value) });
+                          if (formErrors.price) setFormErrors({...formErrors, price: ''});
+                        }}
+                        className={cn(
+                          "w-full px-6 py-4 bg-secondary-bg border-none rounded-2xl outline-none focus:ring-2 transition-all font-medium",
+                          formErrors.price ? "ring-2 ring-red-200" : "focus:ring-accent/20"
+                        )}
                       />
+                      {formErrors.price && <p className="text-[8px] text-red-500 font-bold uppercase tracking-widest pl-2">{formErrors.price}</p>}
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase tracking-widest text-gray-400 px-2">Original Price ($)</label>
@@ -354,7 +412,6 @@ const AdminProducts: React.FC = () => {
                       <label className="text-xs font-bold uppercase tracking-widest text-gray-400 px-2">Stock Level</label>
                       <input
                         type="number"
-                        required
                         value={formData.stock_count}
                         onChange={e => setFormData({ ...formData, stock_count: parseInt(e.target.value) })}
                         className="w-full px-6 py-4 bg-secondary-bg border-none rounded-2xl outline-none focus:ring-2 focus:ring-accent/20 transition-all font-medium"
@@ -388,7 +445,7 @@ const AdminProducts: React.FC = () => {
                       {formData.variants.map((variant, idx) => (
                         <div key={idx} className="flex items-center space-x-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
                           <input 
-                            placeholder="Label (e.g. Shade)"
+                            placeholder="Name (e.g. Shade)"
                             value={variant.name}
                             onChange={(e) => updateVariant(idx, e.target.value, variant.value)}
                             className="w-1/3 bg-secondary-bg border-none rounded-lg px-3 py-2 text-xs outline-none"
@@ -415,7 +472,10 @@ const AdminProducts: React.FC = () => {
                     <label className="text-xs font-bold uppercase tracking-widest text-gray-400 px-2">Product Image</label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-4">
-                        <div className="relative group cursor-pointer h-40 bg-secondary-bg rounded-2xl overflow-hidden border-2 border-dashed border-gray-100 hover:border-accent/40 transition-all">
+                        <div className={cn(
+                          "relative group cursor-pointer h-40 bg-secondary-bg rounded-2xl overflow-hidden border-2 border-dashed transition-all",
+                          formErrors.image_url ? "border-red-200" : "border-gray-100 hover:border-accent/40"
+                        )}>
                           {formData.image_url ? (
                             <>
                               <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
@@ -439,6 +499,7 @@ const AdminProducts: React.FC = () => {
                             disabled={uploading}
                           />
                         </div>
+                        {formErrors.image_url && <p className="text-[8px] text-red-500 font-bold uppercase tracking-widest px-2">{formErrors.image_url}</p>}
                       </div>
                       
                       <div className="space-y-2">
@@ -448,7 +509,10 @@ const AdminProducts: React.FC = () => {
                           <input
                             placeholder="https://images.com/photo.jpg"
                             value={formData.image_url}
-                            onChange={e => setFormData({ ...formData, image_url: e.target.value })}
+                            onChange={e => {
+                              setFormData({ ...formData, image_url: e.target.value });
+                              if (formErrors.image_url) setFormErrors({...formErrors, image_url: ''});
+                            }}
                             className="w-full bg-secondary-bg border-none rounded-2xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-accent/20 transition-all font-medium text-sm"
                           />
                         </div>
@@ -494,9 +558,16 @@ const AdminProducts: React.FC = () => {
                         rows={3}
                         placeholder="Tell the story of this product..."
                         value={formData.description}
-                        onChange={e => setFormData({ ...formData, description: e.target.value })}
-                        className="w-full px-6 py-4 bg-secondary-bg border-none rounded-2xl outline-none focus:ring-2 focus:ring-accent/20 transition-all font-medium resize-none"
+                        onChange={e => {
+                          setFormData({ ...formData, description: e.target.value });
+                          if (formErrors.description) setFormErrors({...formErrors, description: ''});
+                        }}
+                        className={cn(
+                          "w-full px-6 py-4 bg-secondary-bg border-none rounded-2xl outline-none focus:ring-2 transition-all font-medium resize-none",
+                          formErrors.description ? "ring-2 ring-red-200" : "focus:ring-accent/20"
+                        )}
                       />
+                      {formErrors.description && <p className="text-[8px] text-red-500 font-bold uppercase tracking-widest pl-2">{formErrors.description}</p>}
                     </div>
                     <div className="space-y-2">
                       <label className="text-xs font-bold uppercase tracking-widest text-gray-400 px-2">How to Use</label>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Plus, Minus, Trash2, ArrowRight } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ArrowRight, ShoppingBag } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
@@ -146,7 +146,5 @@ const CartDrawer: React.FC = () => {
     </AnimatePresence>
   );
 };
-
-import { ShoppingBag } from 'lucide-react';
 
 export default CartDrawer;
