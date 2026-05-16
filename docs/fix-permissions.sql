@@ -114,4 +114,34 @@ DROP POLICY IF EXISTS "Admin Delete" ON storage.objects;
 CREATE POLICY "Public Access" ON storage.objects FOR SELECT USING (bucket_id = 'product-images');
 CREATE POLICY "Admin Insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'product-images' AND is_admin());
 CREATE POLICY "Admin Update" ON storage.objects FOR UPDATE USING (bucket_id = 'product-images' AND is_admin());
-CREATE POLICY "Admin Delete" ON storage.objects FOR DELETE USING (bucket_id = 'product-images' AND is_admin());
+-- 7. Messaging System
+CREATE TABLE IF NOT EXISTS order_messages (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  order_id UUID REFERENCES orders(id) ON DELETE CASCADE,
+  sender_id UUID REFERENCES profiles(id),
+  content TEXT NOT NULL,
+  is_admin_message BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE order_messages ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users/Admins can view order messages" ON order_messages;
+CREATE POLICY "Users/Admins can view order messages" ON order_messages FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM orders 
+      WHERE orders.id = order_id 
+      AND (orders.user_id = auth.uid() OR is_admin())
+    )
+  );
+
+DROP POLICY IF EXISTS "Users/Admins can insert order messages" ON order_messages;
+CREATE POLICY "Users/Admins can insert order messages" ON order_messages FOR INSERT
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM orders 
+      WHERE orders.id = order_id 
+      AND (orders.user_id = auth.uid() OR is_admin())
+    )
+  );

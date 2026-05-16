@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { motion } from 'motion/react';
-import { Package, User, MapPin, Phone, LogOut, ChevronRight, ShoppingBag, ShieldCheck, Edit3, Trash2, X, Check } from 'lucide-react';
+import { Package, User, MapPin, Phone, LogOut, ChevronRight, ShoppingBag, ShieldCheck, Edit3, Trash2, X, Check, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useToast } from '../contexts/ToastContext';
 import { useConfirm } from '../contexts/DialogContext';
+import OrderMessages from '../components/OrderMessages';
 
 interface Order {
   id: string;
@@ -23,6 +24,7 @@ const Profile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ full_name: '', address: '', phone: '' });
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+  const [activeChat, setActiveChat] = useState<string | null>(null);
   const { showToast } = useToast();
   const confirm = useConfirm();
 
@@ -317,6 +319,17 @@ const Profile: React.FC = () => {
                           <X className="w-5 h-5" />
                         </button>
                       )}
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveChat(order.id);
+                        }}
+                        className="p-3 text-accent hover:bg-accent/5 rounded-2xl transition-all"
+                        title="Chat with Support"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                      </button>
                       
                       <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-accent transition-colors" />
                     </div>
@@ -333,6 +346,12 @@ const Profile: React.FC = () => {
           )}
         </motion.div>
       </div>
+
+      <OrderMessages 
+        orderId={activeChat || ''} 
+        isOpen={!!activeChat} 
+        onClose={() => setActiveChat(null)} 
+      />
     </div>
   );
 };

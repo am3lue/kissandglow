@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
-import { Package, Truck, CheckCircle, Clock, Filter, Search, MoreHorizontal, MapPin, X, ChevronDown } from 'lucide-react';
+import { Package, Truck, CheckCircle, Clock, Filter, Search, MoreHorizontal, MapPin, X, ChevronDown, MessageCircle } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirm } from '../../contexts/DialogContext';
+import OrderMessages from '../../components/OrderMessages';
 
 interface Order {
   id: string;
@@ -33,6 +34,7 @@ const AdminOrders: React.FC = () => {
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [activeChat, setActiveChat] = useState<string | null>(null);
   const { showToast } = useToast();
   const confirm = useConfirm();
 
@@ -253,15 +255,25 @@ const AdminOrders: React.FC = () => {
                       </div>
                     </div>
 
-                    {order.status !== 'Cancelled' && (
+                    <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => cancelOrder(order.id)}
-                        className="p-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all mt-6"
-                        title="Cancel Order"
+                        onClick={() => setActiveChat(order.id)}
+                        className="p-4 text-accent hover:bg-accent/5 rounded-2xl transition-all mt-6 flex items-center space-x-2 border border-accent/10"
                       >
-                        <X className="w-5 h-5" />
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Chat</span>
                       </button>
-                    )}
+
+                      {order.status !== 'Cancelled' && (
+                        <button
+                          onClick={() => cancelOrder(order.id)}
+                          className="p-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all mt-6"
+                          title="Cancel Order"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -295,6 +307,12 @@ const AdminOrders: React.FC = () => {
           ))
         )}
       </div>
+
+      <OrderMessages 
+        orderId={activeChat || ''} 
+        isOpen={!!activeChat} 
+        onClose={() => setActiveChat(null)} 
+      />
     </div>
   );
 };

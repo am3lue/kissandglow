@@ -35,9 +35,9 @@ const Home: React.FC = () => {
     } else {
       // Fallback/Mock data if database is empty or error
       setProducts([
-        { id: '1', name: 'Satin Silk Lipstick', price: 28, original_price: 35, image_url: 'https://images.unsplash.com/photo-1586776977602-310f9915312e?auto=format&fit=crop&q=80', category: 'Makeup', description: 'Weightless coverage for a natural glow.' },
-        { id: '2', name: 'Hydra-Silk Serum', price: 42, original_price: 55, image_url: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&q=80', category: 'Skincare', description: 'Intensive hydration with silk proteins.' },
-        { id: '3', name: 'Azure Mineral Mask', price: 28, original_price: 38, image_url: 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?auto=format&fit=crop&q=80', category: 'Skincare', description: 'Creamy matte finish that lasts all day.' },
+        { id: '1', name: 'Satin Silk Lipstick', price: 28, original_price: 35, image_url: 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?auto=format&fit=crop&q=80', category: 'Makeup', description: 'Weightless coverage for a natural glow.' },
+        { id: '2', name: 'Hydra-Silk Serum', price: 42, original_price: 55, image_url: 'https://c.pxhere.com/photos/da/a2/deo_creme_mint_eucalyptus_lemon_sage_skin_care-543148.jpg!d', category: 'Skincare', description: 'Intensive hydration with silk proteins.' },
+        { id: '3', name: 'Azure Mineral Mask', price: 28, original_price: 38, image_url: 'https://images.unsplash.com/photo-1725695788066-34e372183231?auto=format&fit=crop&q=80', category: 'Skincare', description: 'Creamy matte finish that lasts all day.' },
         { id: '4', name: 'Quartz Facial Roller', price: 22, image_url: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?auto=format&fit=crop&q=80', category: 'Accessories', description: 'Refreshing face mist for instant radiance.' },
       ]);
     }
@@ -45,8 +45,8 @@ const Home: React.FC = () => {
 
   const categories = [
     { name: 'Makeup', image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80', count: 24 },
-    { name: 'Skincare', image: 'https://images.unsplash.com/photo-1570172619999-906963b20757?auto=format&fit=crop&q=80', count: 18 },
-    { name: 'Accessories', image: 'https://images.unsplash.com/photo-1526170315873-3a92bafc2872?auto=format&fit=crop&q=80', count: 12 },
+    { name: 'Skincare', image: 'https://c.pxhere.com/photos/da/a2/deo_creme_mint_eucalyptus_lemon_sage_skin_care-543148.jpg!d', count: 18 },
+    { name: 'Accessories', image: 'https://images.unsplash.com/photo-1552046122-03184de85e08?auto=format&fit=crop&q=80', count: 12 },
   ];
 
   return (
@@ -87,7 +87,7 @@ const Home: React.FC = () => {
               className="absolute inset-0 bg-white rounded-[4rem] shadow-2xl overflow-hidden rotate-3"
             >
               <img
-                src="https://images.unsplash.com/photo-1591130901020-ef93581c62bd?auto=format&fit=crop&q=80"
+                src="https://images.unsplash.com/photo-1725695788066-34e372183231?auto=format&fit=crop&q=80"
                 alt="Radiant Skin"
                 className="w-full h-full object-cover grayscale-[20%] opacity-90"
               />
@@ -172,29 +172,31 @@ const Home: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {categories.map((category, idx) => (
-              <motion.div
+              <Link
                 key={category.name}
-                whileHover={{ y: -10 }}
-                className="relative overflow-hidden group rounded-3xl aspect-[4/5]"
+                to={`/category/${category.name.toLowerCase()}`}
+                className="relative overflow-hidden group rounded-3xl aspect-[4/5] block"
               >
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
-                  <span className="text-white/60 text-xs font-medium tracking-[0.2em] uppercase mb-2">
-                    {category.count} Products
-                  </span>
-                  <h3 className="text-white text-3xl font-display font-light mb-4">{category.name}</h3>
-                  <Link
-                    to={`/category/${category.name.toLowerCase()}`}
-                    className="w-10 h-10 rounded-full bg-white flex items-center justify-center translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500"
-                  >
-                    <ArrowRight className="w-5 h-5 text-accent" />
-                  </Link>
-                </div>
-              </motion.div>
+                <motion.div
+                  whileHover={{ y: -10 }}
+                  className="h-full w-full"
+                >
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
+                    <span className="text-white/60 text-xs font-medium tracking-[0.2em] uppercase mb-2">
+                      {category.count} Products
+                    </span>
+                    <h3 className="text-white text-3xl font-display font-light mb-4">{category.name}</h3>
+                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center translate-y-12 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                      <ArrowRight className="w-5 h-5 text-accent" />
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>

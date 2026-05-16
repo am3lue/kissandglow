@@ -16,7 +16,6 @@ const AdminDashboard: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
-  const [seedMessage, setSeedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -80,7 +79,7 @@ const AdminDashboard: React.FC = () => {
 
   const seedSampleProducts = async () => {
     setLoading(true);
-    setSeedMessage("Seeding advanced catalog...");
+    showToast("Seeding professional catalog...", "info");
     const samples = [
       {
         name: "Satin Silk Lipstick",
@@ -89,7 +88,7 @@ const AdminDashboard: React.FC = () => {
         original_price: 35.00,
         category: "Makeup",
         stock_count: 120,
-        image_url: "https://images.unsplash.com/photo-1586776977602-310f9915312e?q=80&w=800&auto=format&fit=crop",
+        image_url: "https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=800&auto=format&fit=crop",
         is_featured: true,
         how_to_use: "Apply starting from the center of the upper lip towards the corners.",
         ingredients: "Candelilla Wax, Jojoba Oil, Vitamin E, Mineral Pigments.",
@@ -103,7 +102,7 @@ const AdminDashboard: React.FC = () => {
         original_price: 68.00,
         category: "Skincare",
         stock_count: 45,
-        image_url: "https://images.unsplash.com/photo-1608248597279-f99ec2bb350b?q=80&w=800&auto=format&fit=crop",
+        image_url: "https://c.pxhere.com/photos/da/a2/deo_creme_mint_eucalyptus_lemon_sage_skin_care-543148.jpg!d",
         is_featured: true,
         how_to_use: "Massage 2-3 drops onto clean skin before moisturizer.",
         ingredients: "Argan Oil, Rosehip Oil, 24k Gold Flakes, Lavender Extract.",
@@ -117,7 +116,7 @@ const AdminDashboard: React.FC = () => {
         original_price: 24.00,
         category: "Accessories",
         stock_count: 200,
-        image_url: "https://images.unsplash.com/photo-1601004890684-d8cbf393f5f2?q=80&w=800&auto=format&fit=crop",
+        image_url: "https://images.unsplash.com/photo-1552046122-03184de85e08?q=80&w=800&auto=format&fit=crop",
         is_featured: false,
         how_to_use: "Dampen with water, squeeze out excess, and bounce over skin.",
         ingredients: "Latex-free hydrophilic foam.",
@@ -155,7 +154,7 @@ const AdminDashboard: React.FC = () => {
         price: 28.00,
         category: "Skincare",
         stock_count: 55,
-        image_url: "https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=800&auto=format&fit=crop",
+        image_url: "https://images.unsplash.com/photo-1725695788066-34e372183231?auto=format&fit=crop&q=80",
         is_featured: false,
         how_to_use: "Apply even layer, wait 10 mins, rinse with warm water.",
         ingredients: "Dead Sea Mud, Kaolin Clay, Aloe Vera.",
@@ -190,15 +189,6 @@ const AdminDashboard: React.FC = () => {
           <p className="text-gray-400">Welcome back. Here's what's happening today at Kiss & Glow.</p>
         </div>
         <div className="flex flex-col items-end space-y-2">
-          {seedMessage && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="text-[10px] font-bold uppercase tracking-widest text-accent bg-accent/5 px-4 py-2 rounded-lg"
-            >
-              {seedMessage}
-            </motion.div>
-          )}
           <div className="flex space-x-3">
             <Link
               to="/"
