@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { DialogProvider } from './contexts/DialogContext';
+import { LocationProvider } from './contexts/LocationContext';
 import { ArrowRight } from 'lucide-react';
 import Navbar from './components/Navbar';
 import CartDrawer from './components/CartDrawer';
@@ -34,9 +35,10 @@ function App() {
   return (
     <ToastProvider>
       <DialogProvider>
-        <AuthProvider>
-          <CartProvider>
-            <Router>
+        <LocationProvider>
+          <AuthProvider>
+            <CartProvider>
+              <Router>
           <div className="flex flex-col min-h-screen">
             <Navbar />
             <CartDrawer />
@@ -109,6 +111,7 @@ function App() {
         </Router>
       </CartProvider>
     </AuthProvider>
+    </LocationProvider>
     </DialogProvider>
   </ToastProvider>
   );

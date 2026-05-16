@@ -4,9 +4,11 @@ import { useCart } from '../contexts/CartContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 import { Link } from 'react-router-dom';
+import { useLocation } from '../contexts/LocationContext';
 
 const CartDrawer: React.FC = () => {
   const { isCartOpen, setIsCartOpen, items, updateQuantity, removeItem, total } = useCart();
+  const { formatPrice } = useLocation();
 
   return (
     <AnimatePresence>
@@ -83,7 +85,7 @@ const CartDrawer: React.FC = () => {
                             </button>
                           </div>
                           <p className="font-serif text-charcoal mt-1 italic">
-                            ${item.price.toFixed(2)}
+                            {formatPrice(item.price)}
                           </p>
                         </div>
                         <div className="flex items-center space-x-4 bg-secondary-bg w-fit rounded-full px-3 py-1 scale-90 -ml-2">
@@ -121,7 +123,7 @@ const CartDrawer: React.FC = () => {
                 <div className="flex justify-between items-end border-b border-white/10 pb-6">
                   <span className="text-white/60 text-xs font-medium tracking-wide">Subtotal</span>
                   <span className="text-3xl font-serif font-light">
-                    ${total.toFixed(2)}
+                    {formatPrice(total)}
                   </span>
                 </div>
 

@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '../lib/utils';
 import { useToast } from '../contexts/ToastContext';
 import { useConfirm } from '../contexts/DialogContext';
+import { useLocation } from '../contexts/LocationContext';
 import OrderMessages from '../components/OrderMessages';
 
 interface Order {
@@ -27,6 +28,14 @@ const Profile: React.FC = () => {
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const { showToast } = useToast();
   const confirm = useConfirm();
+  const { formatPrice, addressSuggestion } = useLocation();
+
+  // Suggest location if profile address is empty
+  useEffect(() => {
+    if (addressSuggestion && !editForm.address && isEditing) {
+      setEditForm(prev => ({ ...prev, address: addressSuggestion }));
+    }
+  }, [addressSuggestion, isEditing]);
 
   useEffect(() => {
     if (user) {
@@ -45,7 +54,7 @@ const Profile: React.FC = () => {
       setProfile(profileRes.data);
       setEditForm({
         full_name: profileRes.data.full_name || '',
-        address: profileRes.data.address || '',
+        address: profileRes.data.address || addressSuggestion || '',
         phone: profileRes.data.phone || ''
       });
     }
@@ -296,7 +305,7 @@ const Profile: React.FC = () => {
                     </div>
                     <div className="flex items-center space-x-6">
                       <div className="text-right">
-                        <p className="text-xl font-display font-semibold text-charcoal">${order.total_amount}</p>
+                        <p className="text-xl font-display font-semibold text-charcoal">{formatPrice(order.total_amount)}</p>
                         <span className={cn(
                           "text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full",
                           order.status === 'Delivered' ? "bg-green-50 text-green-600" : 

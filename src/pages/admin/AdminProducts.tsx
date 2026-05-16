@@ -5,6 +5,7 @@ import { Plus, Search, Filter, Edit3, Trash2, X, Image as ImageIcon, Check, Chev
 import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirm } from '../../contexts/DialogContext';
+import { useLocation } from '../../contexts/LocationContext';
 
 interface Product {
   id: string;
@@ -47,6 +48,7 @@ const AdminProducts: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const { showToast } = useToast();
   const confirm = useConfirm();
+  const { formatPrice } = useLocation();
 
   useEffect(() => {
     fetchProducts();
@@ -284,7 +286,7 @@ const AdminProducts: React.FC = () => {
                     <td className="px-8 py-5">
                       <span className="px-3 py-1 bg-accent/5 text-accent rounded-full text-xs font-medium">{p.category}</span>
                     </td>
-                    <td className="px-8 py-5 text-charcoal font-semibold">${p.price}</td>
+                    <td className="px-8 py-5 text-charcoal font-semibold">{formatPrice(p.price)}</td>
                     <td className="px-8 py-5 text-gray-500">{p.stock_count} units</td>
                     <td className="px-8 py-5">
                       {p.stock_count > 0 ? (

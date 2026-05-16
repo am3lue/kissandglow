@@ -5,6 +5,7 @@ import { Package, Truck, CheckCircle, Clock, Filter, Search, MoreHorizontal, Map
 import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirm } from '../../contexts/DialogContext';
+import { useLocation } from '../../contexts/LocationContext';
 import OrderMessages from '../../components/OrderMessages';
 
 interface Order {
@@ -37,6 +38,7 @@ const AdminOrders: React.FC = () => {
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const { showToast } = useToast();
   const confirm = useConfirm();
+  const { formatPrice } = useLocation();
 
   useEffect(() => {
     fetchOrders();
@@ -205,7 +207,7 @@ const AdminOrders: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-center gap-6 lg:gap-12">
                   <div className="text-center sm:text-right">
                     <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Total Amount</p>
-                    <p className="text-2xl font-display font-semibold text-accent">${order.total_amount}</p>
+                    <p className="text-2xl font-display font-semibold text-accent">{formatPrice(order.total_amount)}</p>
                   </div>
                   
                   <div className="flex items-center space-x-4">
@@ -296,7 +298,7 @@ const AdminOrders: React.FC = () => {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-xs font-bold text-charcoal truncate">{item.products?.name}</p>
-                          <p className="text-[10px] text-gray-400">Qty: {item.quantity} • ${item.price}</p>
+                          <p className="text-[10px] text-gray-400">Qty: {item.quantity} • {formatPrice(item.price)}</p>
                         </div>
                       </div>
                     ))}

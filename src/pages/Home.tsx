@@ -4,6 +4,7 @@ import { ArrowRight, Star, Heart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
+import { useLocation } from '../contexts/LocationContext';
 import { cn } from '../lib/utils';
 
 interface Product {
@@ -19,6 +20,7 @@ interface Product {
 const Home: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const { addItem } = useCart();
+  const { formatPrice } = useLocation();
 
   useEffect(() => {
     fetchProducts();
@@ -44,9 +46,9 @@ const Home: React.FC = () => {
   };
 
   const categories = [
-    { name: 'Makeup', image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?auto=format&fit=crop&q=80', count: 24 },
+    { name: 'Makeup', image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=70&w=800&auto=format&fit=crop', count: 24 },
     { name: 'Skincare', image: 'https://c.pxhere.com/photos/da/a2/deo_creme_mint_eucalyptus_lemon_sage_skin_care-543148.jpg!d', count: 18 },
-    { name: 'Accessories', image: 'https://images.unsplash.com/photo-1552046122-03184de85e08?auto=format&fit=crop&q=80', count: 12 },
+    { name: 'Accessories', image: 'https://images.unsplash.com/photo-1552046122-03184de85e08?q=70&w=800&auto=format&fit=crop', count: 12 },
   ];
 
   return (
@@ -87,8 +89,9 @@ const Home: React.FC = () => {
               className="absolute inset-0 bg-white rounded-[4rem] shadow-2xl overflow-hidden rotate-3"
             >
               <img
-                src="https://images.unsplash.com/photo-1725695788066-34e372183231?auto=format&fit=crop&q=80"
+                src="https://images.unsplash.com/photo-1725695788066-34e372183231?q=75&w=1000&auto=format&fit=crop"
                 alt="Radiant Skin"
+                loading="eager"
                 className="w-full h-full object-cover grayscale-[20%] opacity-90"
               />
             </motion.div>
@@ -121,8 +124,9 @@ const Home: React.FC = () => {
               >
                 <Link to={`/product/${product.id}`} className="block aspect-[3/4] bg-secondary-bg rounded-[2rem] overflow-hidden mb-5 relative shadow-sm group-hover:shadow-xl transition-all duration-500">
                   <img
-                    src={product.image_url}
+                    src={`${product.image_url}${product.image_url.includes('?') ? '&' : '?'}q=70&w=500&auto=format&fit=crop`}
                     alt={product.name}
+                    loading="lazy"
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -131,7 +135,7 @@ const Home: React.FC = () => {
                   <p className="text-[10px] font-bold uppercase tracking-widest text-charcoal/30">{product.category}</p>
                   <h3 className="text-sm font-medium text-charcoal group-hover:text-accent transition-colors">{product.name}</h3>
                   <div className="flex items-center space-x-2">
-                    <p className="font-serif text-charcoal font-semibold">${product.price.toFixed(2)}</p>
+                    <p className="font-serif text-charcoal font-semibold">{formatPrice(product.price)}</p>
                   </div>
                 </div>
               </motion.div>
@@ -147,15 +151,16 @@ const Home: React.FC = () => {
               >
                 <Link to={`/product/${product.id}`} className="block aspect-[3/4] bg-secondary-bg rounded-[2rem] overflow-hidden mb-5 relative shadow-sm group-hover:shadow-xl transition-all duration-500">
                   <img
-                    src={product.image_url}
+                    src={`${product.image_url}${product.image_url.includes('?') ? '&' : '?'}q=70&w=500&auto=format&fit=crop`}
                     alt={product.name}
+                    loading="lazy"
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                   />
                 </Link>
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-charcoal/30">{product.category}</p>
                   <h3 className="text-sm font-medium text-charcoal group-hover:text-accent transition-colors">{product.name}</h3>
-                  <p className="font-serif text-charcoal font-semibold">${product.price.toFixed(2)}</p>
+                  <p className="font-serif text-charcoal font-semibold">{formatPrice(product.price)}</p>
                 </div>
               </motion.div>
             ))

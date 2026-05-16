@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -8,6 +8,7 @@ import { cn } from '../lib/utils';
 import { ArrowRight, CheckCircle, CreditCard, Truck, MapPin, AlertCircle } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
 import { useConfirm } from '../contexts/DialogContext';
+import { useLocation } from '../contexts/LocationContext';
 
 const Checkout: React.FC = () => {
   const { items, total, clearCart } = useCart();
@@ -15,11 +16,19 @@ const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const confirm = useConfirm();
+  const { formatPrice, addressSuggestion } = useLocation();
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
   
   const [address, setAddress] = useState('');
   const [addressError, setAddressError] = useState<string | null>(null);
+
+  // Suggested location - plugged in silently for the user to edit
+  useEffect(() => {
+    if (addressSuggestion && !address) {
+      setAddress(addressSuggestion);
+    }
+  }, [addressSuggestion]);
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +41,7 @@ const Checkout: React.FC = () => {
 
     const isConfirmed = await confirm({
       title: 'Complete Purchase',
-      message: `You are about to place an order for $${total.toFixed(2)}. Proceed?`,
+      message: `You are about to place an order for ${formatPrice(total)}. Proceed?`,
       confirmText: 'Pay & Complete'
     });
 
@@ -212,7 +221,7 @@ const Checkout: React.FC = () => {
                     <p className="text-[10px] opacity-40">Qty: {item.quantity}</p>
                   </div>
                 </div>
-                <p className="font-serif italic">${(item.price * item.quantity).toFixed(2)}</p>
+                <p className="font-serif italic">{formatPrice(item.price * item.quantity)}</p>
               </div>
             ))}
           </div>
@@ -220,7 +229,7 @@ const Checkout: React.FC = () => {
           <div className="space-y-4 pt-10 border-t border-white/10">
             <div className="flex justify-between text-xs opacity-60">
               <span>Subtotal</span>
-              <span>${total.toFixed(2)}</span>
+              <span>{formatPrice(total)}</span>
             </div>
             <div className="flex justify-between text-xs opacity-60">
               <span>Shipping</span>
@@ -228,7 +237,7 @@ const Checkout: React.FC = () => {
             </div>
             <div className="flex justify-between items-end pt-6">
               <span className="text-xs font-bold uppercase tracking-widest opacity-80">Total Due</span>
-              <span className="text-4xl font-serif font-light">${total.toFixed(2)}</span>
+              <span className="text-4xl font-serif font-light">{formatPrice(total)}</span>
             </div>
           </div>
 

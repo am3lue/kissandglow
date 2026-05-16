@@ -5,6 +5,7 @@ import { Package, ShoppingCart, Users, TrendingUp, ChevronRight, Clock, CheckCir
 import { Link } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
+import { useLocation } from '../../contexts/LocationContext';
 
 const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState({
@@ -16,6 +17,7 @@ const AdminDashboard: React.FC = () => {
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
+  const { formatPrice } = useLocation();
 
   useEffect(() => {
     fetchDashboardData();
@@ -176,7 +178,7 @@ const AdminDashboard: React.FC = () => {
     { label: 'Inventory', value: stats.totalProducts, icon: Package, color: 'text-blue-600', bg: 'bg-blue-50', path: '/admin/products' },
     { label: 'Pending Orders', value: stats.pendingOrders, icon: Clock, color: 'text-accent', bg: 'bg-accent/5', path: '/admin/orders' },
     { label: 'Total Customers', value: stats.totalUsers, icon: Users, color: 'text-purple-600', bg: 'bg-purple-50', path: '#' },
-    { label: 'Revenue (Mock)', value: `$${stats.totalSales}`, icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50', path: '#' },
+    { label: 'Revenue (Mock)', value: formatPrice(stats.totalSales), icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50', path: '#' },
   ];
 
   if (loading) return <div className="p-8 font-display text-accent animate-pulse italic">Loading Dashboard...</div>;
@@ -262,7 +264,7 @@ const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <p className="text-sm font-bold text-charcoal">${order.total_amount}</p>
+                    <p className="text-sm font-bold text-charcoal">{formatPrice(order.total_amount)}</p>
                     <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-accent" />
                   </div>
                 </div>

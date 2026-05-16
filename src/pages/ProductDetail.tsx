@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { Star, Heart, Share2, ShieldCheck, Truck, RefreshCw, Plus, Minus, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../contexts/CartContext';
+import { useLocation } from '../contexts/LocationContext';
 import { cn } from '../lib/utils';
 
 interface Product {
@@ -28,6 +29,7 @@ const ProductDetail: React.FC = () => {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const { addItem } = useCart();
+  const { formatPrice } = useLocation();
 
   useEffect(() => {
     if (id) fetchProduct();
@@ -109,9 +111,9 @@ const ProductDetail: React.FC = () => {
             <div className="flex items-center space-x-6 mb-8">
               <div className="flex flex-col">
                 {product.original_price && product.original_price > product.price && (
-                  <span className="text-sm text-gray-400 line-through mb-1">${product.original_price.toFixed(2)}</span>
+                  <span className="text-sm text-gray-400 line-through mb-1">{formatPrice(product.original_price)}</span>
                 )}
-                <span className="text-4xl font-serif font-light text-charcoal/80">${product.price.toFixed(2)}</span>
+                <span className="text-4xl font-serif font-light text-charcoal/80">{formatPrice(product.price)}</span>
               </div>
               <div className="flex items-center space-x-2 px-4 py-2 bg-accent/5 rounded-full text-[10px] font-bold tracking-widest uppercase text-accent">
                 <Star className="w-3 h-3 fill-accent" />

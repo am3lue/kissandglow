@@ -3,11 +3,13 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { motion } from 'motion/react';
 import { Filter, ArrowRight } from 'lucide-react';
+import { useLocation } from '../contexts/LocationContext';
 
 const Category: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { formatPrice } = useLocation();
 
   useEffect(() => {
     fetchProducts();
@@ -92,9 +94,9 @@ const Category: React.FC = () => {
                     <div className="flex justify-between items-start">
                       <h3 className="text-lg font-medium text-charcoal group-hover:text-accent transition-colors">{product.name}</h3>
                       <div className="flex flex-col items-end">
-                        <span className="font-serif text-charcoal/80 italic font-semibold">${product.price.toFixed(2)}</span>
+                        <span className="font-serif text-charcoal/80 italic font-semibold">{formatPrice(product.price)}</span>
                         {product.original_price && product.original_price > product.price && (
-                          <span className="text-[10px] text-gray-400 line-through">${product.original_price.toFixed(2)}</span>
+                          <span className="text-[10px] text-gray-400 line-through">{formatPrice(product.original_price)}</span>
                         )}
                       </div>
                     </div>

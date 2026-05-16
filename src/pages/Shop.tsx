@@ -3,12 +3,14 @@ import { supabase } from '../lib/supabase';
 import { motion } from 'motion/react';
 import { Filter, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useLocation } from '../contexts/LocationContext';
 
 const Shop: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState('All');
+  const { formatPrice } = useLocation();
 
   useEffect(() => {
     fetchProducts();
@@ -96,8 +98,9 @@ const Shop: React.FC = () => {
               >
                 <Link to={`/product/${product.id}`} className="block aspect-[3/4] bg-secondary-bg rounded-[2rem] overflow-hidden mb-5 relative shadow-sm group-hover:shadow-xl transition-all duration-500">
                   <img
-                    src={product.image_url}
+                    src={`${product.image_url}${product.image_url.includes('?') ? '&' : '?'}q=70&w=500&auto=format&fit=crop`}
                     alt={product.name}
+                    loading="lazy"
                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700 opacity-90 group-hover:opacity-100"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -105,10 +108,10 @@ const Shop: React.FC = () => {
                 <div className="space-y-1">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-charcoal/30">{product.category}</p>
                   <h3 className="text-sm font-medium text-charcoal group-hover:text-accent transition-colors">{product.name}</h3>
-                  <div className="flex items-center space-x-2">
-                    <p className="font-serif text-charcoal font-semibold">${product.price.toFixed(2)}</p>
-                    {product.original_price && product.original_price > product.price && (
-                      <p className="font-serif text-[10px] text-gray-400 line-through">${product.original_price.toFixed(2)}</p>
+                  <div className="flex items-center space-x-3">
+                    <p className="font-serif text-charcoal font-semibold">{formatPrice(product.price)}</p>
+                    {product.original_price && (
+                      <p className="font-serif text-[10px] text-gray-400 line-through">{formatPrice(product.original_price)}</p>
                     )}
                   </div>
                 </div>
