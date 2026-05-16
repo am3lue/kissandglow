@@ -130,7 +130,7 @@ const ProductDetail: React.FC = () => {
 
           <div className="space-y-10">
             {/* Variants */}
-            {product.variants && product.variants.length > 0 && (
+            {Array.isArray(product.variants) && product.variants.length > 0 && (
               <div className="space-y-4">
                 <p className="text-[10px] font-bold tracking-widest uppercase text-gray-400">Available Options</p>
                 <div className="flex flex-wrap gap-3">
@@ -221,7 +221,7 @@ const ProductDetail: React.FC = () => {
       </div>
 
       {/* Testing Results */}
-      {product.result_images && product.result_images.length > 0 && (
+      {Array.isArray(product.result_images) && product.result_images.length > 0 && (
         <section className="mt-32">
           <div className="text-center mb-16">
             <h3 className="font-display text-4xl font-light text-charcoal italic mb-4">Testing Results</h3>
