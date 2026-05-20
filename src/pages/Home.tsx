@@ -38,7 +38,7 @@ const Home: React.FC = () => {
       // Fallback/Mock data if database is empty or error
       setProducts([
         { id: '1', name: 'Satin Silk Lipstick', price: 28, original_price: 35, image_url: 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?auto=format&fit=crop&q=80', category: 'Makeup', description: 'Weightless coverage for a natural glow.' },
-        { id: '2', name: 'Hydra-Silk Serum', price: 42, original_price: 55, image_url: 'https://c.pxhere.com/photos/da/a2/deo_creme_mint_eucalyptus_lemon_sage_skin_care-543148.jpg!d', category: 'Skincare', description: 'Intensive hydration with silk proteins.' },
+        { id: '2', name: 'Hydra-Silk Serum', price: 42, original_price: 55, image_url: 'https://cdn.corenexis.com/files/c/7413692720.jpg', category: 'Skincare', description: 'Intensive hydration with silk proteins.' },
         { id: '3', name: 'Azure Mineral Mask', price: 28, original_price: 38, image_url: 'https://images.unsplash.com/photo-1725695788066-34e372183231?auto=format&fit=crop&q=80', category: 'Skincare', description: 'Creamy matte finish that lasts all day.' },
         { id: '4', name: 'Quartz Facial Roller', price: 22, image_url: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?auto=format&fit=crop&q=80', category: 'Accessories', description: 'Refreshing face mist for instant radiance.' },
       ]);
@@ -47,8 +47,8 @@ const Home: React.FC = () => {
 
   const categories = [
     { name: 'Makeup', image: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=70&w=800&auto=format&fit=crop', count: 24 },
-    { name: 'Skincare', image: 'https://c.pxhere.com/photos/da/a2/deo_creme_mint_eucalyptus_lemon_sage_skin_care-543148.jpg!d', count: 18 },
-    { name: 'Accessories', image: 'https://images.unsplash.com/photo-1552046122-03184de85e08?q=70&w=800&auto=format&fit=crop', count: 12 },
+    { name: 'Skincare', image: 'https://cdn.corenexis.com/files/c/4431647720.jpg', count: 18 },
+    { name: 'Accessories', image: 'https://cdn.corenexis.com/files/c/7413692720.jpg', count: 12 },
   ];
 
   return (
